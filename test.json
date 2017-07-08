@@ -1,7 +1,10 @@
 {
   "variables": {
     "aws_access_key": "",
-    "aws_secret_key": ""
+    "aws_secret_key": "",
+    "environment": "",
+    "playbook_file": "",
+    "ansible_version": "2.3.1.0",
   },
   "builders": [{
     "type": "amazon-ebs",
@@ -25,9 +28,10 @@
     "type": "shell",
     "inline": [
       "sleep 30",
-      "sudo apt update",
-      "sudo apt upgrade -y",
-      "sudo apt install -y python python-pip"
+      "sudo apt-get update",
+      "sudo DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::=\"--force-confdef\" -o Dpkg::Options::=\"--force-confold\" upgrade",
+      "sudo apt-get install -y python python-pip",
+      "sudo pip install -y ansible=={{user `ansible_version` }}"
     ]
   }]
 }

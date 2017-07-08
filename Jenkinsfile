@@ -16,11 +16,12 @@ nodeDocker {
         credentialsId: 'reynn-aws-ec2'
       ]]) {
         sh """
-        |packer build \
-        | -var 'aws_access_key=${env.AWS_ACCESS_KEY_ID}' \
-        | -var 'aws_secret_key=${env.AWS_SECRET_ACCESS_KEY}' \
-        | test.json
-        """.stripMargin()
+           packer build \
+             -var 'aws_access_key=${env.AWS_ACCESS_KEY_ID}' \
+             -var 'aws_secret_key=${env.AWS_SECRET_ACCESS_KEY}' \
+             -var 'ansible_version=2.3.1.0' \
+             test.json
+           """
       }
     }
   }
