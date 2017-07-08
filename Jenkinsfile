@@ -15,7 +15,12 @@ nodeDocker {
         secretKeyVariable: 'AWS_SECRET_ACCESS_KEY',
         credentialsId: 'reynn-aws-ec2'
       ]]) {
-        sh "Access KEY: ${env.AWS_ACCESS_KEY_ID}"
+        sh """
+        |packer build \
+        | -var 'aws_access_key=${env.AWS_ACCESS_KEY_ID}' \
+        | -var 'aws_secret_key=${env.AWS_SECRET_ACCESS_KEY}' \
+        | test.json
+        """.stripMargin()
       }
     }
   }
