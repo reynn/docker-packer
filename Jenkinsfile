@@ -1,5 +1,4 @@
 #!/usr/bin/env groovy
-
 @Library('pipelineLibraries')_
 
 nodeDocker {
@@ -7,7 +6,13 @@ nodeDocker {
     checkout scm
   }
 
-  stage('aws: build ami') {
+  stage('packer: gather files') {
+    packerFiles = findFiles glob: 'templates/*.json'
+    assert packerFiles : ''
+  }
+
+  stage('packer: build amis') {
+    def dockerVersion = params.dockerVersion ?: '17.06'
     docker.image('reynn/docker-packer:latest').inside {
       withCredentials([[
         $class: 'AmazonWebServicesCredentialsBinding',
@@ -15,13 +20,16 @@ nodeDocker {
         secretKeyVariable: 'AWS_SECRET_ACCESS_KEY',
         credentialsId: 'reynn-aws-ec2'
       ]]) {
-        sh """
-           packer build \
-             -var 'aws_access_key=${env.AWS_ACCESS_KEY_ID}' \
-             -var 'aws_secret_key=${env.AWS_SECRET_ACCESS_KEY}' \
-             -var 'ansible_version=2.3.1.0' \
-             test.json
-           """
+        for (packerFile in packerFiles) {
+          println "Building $packerFile"
+          sh """
+            packer build \
+              -var 'aws_access_key=${env.AWS_ACCESS_KEY_ID}' \
+              -var 'aws_secret_key=${env.AWS_SECRET_ACCESS_KEY}' \
+              -var 'docker_version=$dockerVersion' \
+              $packerFile
+            """
+        }
       }
     }
   }
