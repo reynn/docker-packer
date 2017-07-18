@@ -1,39 +1,39 @@
 {
   "variables": {
-    "aws_access_key": "",
-    "aws_secret_key": "",
-    "environment": "",
-    "docker_version": ""
+    "aws_access_key"    : "",
+    "aws_secret_key"    : "",
+    "environment"       : "",
+    "docker_version"    : ""
   },
   "builders": [{
-    "type": "amazon-ebs",
-    "access_key": "{{user `aws_access_key`}}",
-    "secret_key": "{{user `aws_secret_key`}}",
-    "region": "us-west-2",
-    "source_ami_filter": {
-      "filters": {
-        "virtualization-type": "hvm",
-        "name": "*ubuntu-xenial-16.04-amd64-server-*",
-        "root-device-type": "ebs"
+    "type"              : "amazon-ebs",
+    "access_key"        : "{{user `aws_access_key`}}",
+    "secret_key"        : "{{user `aws_secret_key`}}",
+    "region"            : "us-west-2",
+    "source_ami_filter" : {
+      "filters"         : {
+        "virtualization-type" : "hvm",
+        "name"                : "*ubuntu-xenial-16.04-amd64-server-*",
+        "root-device-type"    : "ebs"
       },
-      "owners": ["099720109477"],
-      "most_recent": true
+      "owners"      : ["099720109477"],
+      "most_recent" : true
     },
-    "instance_type": "t2.medium",
-    "ssh_username": "ubuntu",
-    "ami_name": "docker-17.06_ubuntu-16.04 {{timestamp}}"
+    "instance_type" : "t2.medium",
+    "ssh_username"  : "ubuntu",
+    "ami_name"      : "docker-17.06_ubuntu-16.04 {{timestamp}}"
   }],
-  "provisioners": [{
-    "type": "shell",
-    "inline": [
+  "provisioners"  : [{
+    "type"        : "shell",
+    "inline"      : [
       "sleep 30",
       "sudo apt-get update",
       "sudo DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::=\"--force-confdef\" -o Dpkg::Options::=\"--force-confold\" upgrade",
-      "sudo apt-get install -y python python-pip linux-image-extra linux-image-extra-virtual apt-transport-https ca-certificates curl software-properties-common",
+      "sudo apt-get install -y python python-pip linux-image-extra-$(uname -r)-generic linux-image-extra-virtual apt-transport-https ca-certificates curl software-properties-common",
       "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -",
-      "sudo add-apt-repository deb[arch = amd64] https: //download.docker.com/linux/ubuntu $(lsb_release - cs) stable",
+      "sudo add-apt-repository \"deb https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable\"",
       "sudo apt-get update",
-      "sudo apt-get install docker-ce"
+      "sudo apt-get install -y docker-ce"
     ]
   }]
 }
