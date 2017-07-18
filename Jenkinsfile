@@ -8,11 +8,16 @@ nodeDocker {
 
   stage('packer: gather files') {
     packerFiles = findFiles glob: 'templates/*.json'
-    assert packerFiles : ''
+    assert packerFiles : 'No Packer JSON files found.'
+    println "Packer JSON templates found"
+    packerFiles.each {
+      println it
+    }
   }
 
   stage('packer: build amis') {
     def dockerVersion = params.dockerVersion ?: '17.06'
+    def packerFile = packerFiles[0]
     docker.image('reynn/docker-packer:latest').inside {
       withCredentials([[
         $class: 'AmazonWebServicesCredentialsBinding',
@@ -20,16 +25,14 @@ nodeDocker {
         secretKeyVariable: 'AWS_SECRET_ACCESS_KEY',
         credentialsId: 'reynn-aws-ec2'
       ]]) {
-        for (packerFile in packerFiles) {
-          println "Building $packerFile"
-          sh """
-            packer build \
-              -var 'aws_access_key=${env.AWS_ACCESS_KEY_ID}' \
-              -var 'aws_secret_key=${env.AWS_SECRET_ACCESS_KEY}' \
-              -var 'docker_version=$dockerVersion' \
-              $packerFile
-            """
-        }
+        println "Building ${packerFile}"
+        sh """
+          packer build \
+            -var 'aws_access_key=${env.AWS_ACCESS_KEY_ID}' \
+            -var 'aws_secret_key=${env.AWS_SECRET_ACCESS_KEY}' \
+            -var 'docker_version=${dockerVersion}' \
+            ${packerFile}
+          """
       }
     }
   }
